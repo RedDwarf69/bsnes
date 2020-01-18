@@ -56,8 +56,14 @@ struct AudioALSA : AudioDriver {
   auto setLatency(uint latency) -> bool override { return initialize(); }
 
   auto level() -> double override {
-    snd_pcm_sframes_t available = snd_pcm_avail_update(_interface);
-    if(available < 0) return 0.5;
+    snd_pcm_sframes_t available;
+    while(true) {
+      available = snd_pcm_avail_update(_interface);
+      if(available >= 0) {
+        break;
+      }
+      snd_pcm_recover(_interface, available, 1);
+    }
     return (double)(_bufferSize - available) / _bufferSize;
   }
 
