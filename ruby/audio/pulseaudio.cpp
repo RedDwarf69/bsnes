@@ -91,7 +91,9 @@ private:
       if(!PA_STREAM_IS_GOOD(streamState)) return false;
     } while(streamState != PA_STREAM_READY);
 
-    _period = 960;
+    const pa_buffer_attr* realBufferAttributes = pa_stream_get_buffer_attr(_stream);
+
+    _period = realBufferAttributes->minreq;
     _offset = 0;
     _first = true;
     return _ready = true;
