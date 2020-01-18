@@ -64,6 +64,9 @@ struct AudioALSA : AudioDriver {
     _buffer[_offset]  = (uint16_t)sclamp<16>(samples[0] * 32767.0) <<  0;
     _buffer[_offset] |= (uint16_t)sclamp<16>(samples[1] * 32767.0) << 16;
     _offset++;
+    if(_offset < _periodSize) {
+      return;
+    }
 
     snd_pcm_sframes_t available;
     do {
