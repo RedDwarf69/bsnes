@@ -15,6 +15,7 @@ struct AudioPulseAudio : AudioDriver {
   auto ready() -> bool override { return _ready; }
 
   auto hasBlocking() -> bool override { return true; }
+  auto hasDynamic() -> bool override { return true; }
 
   auto hasFrequencies() -> vector<uint> override {
     return {44100, 48000, 96000};
@@ -27,6 +28,13 @@ struct AudioPulseAudio : AudioDriver {
   auto setBlocking(bool blocking) -> bool override { return true; }
   auto setFrequency(uint frequency) -> bool override { return initialize(); }
   auto setLatency(uint latency) -> bool override { return initialize(); }
+
+  auto level() -> double override {
+    pa_mainloop_iterate(_mainLoop, 0, nullptr);
+    auto length = pa_stream_writable_size(_stream);
+
+    return (double)(_bufferSize - length) / _bufferSize;
+  }
 
   auto output(const double samples[]) -> void override {
     pa_stream_begin_write(_stream, (void**)&_buffer, &_period);
@@ -90,6 +98,7 @@ private:
     const pa_buffer_attr* realBufferAttributes = pa_stream_get_buffer_attr(_stream);
 
     _period = realBufferAttributes->minreq;
+    _bufferSize = realBufferAttributes->tlength;
     _offset = 0;
     return _ready = true;
   }
@@ -124,6 +133,7 @@ private:
 
   uint32_t* _buffer = nullptr;
   size_t _period = 0;
+  size_t _bufferSize = 0;
   uint _offset = 0;
 
   pa_mainloop* _mainLoop = nullptr;
