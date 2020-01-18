@@ -72,7 +72,10 @@ struct AudioALSA : AudioDriver {
     snd_pcm_sframes_t available;
     do {
       available = snd_pcm_avail_update(_interface);
-      if(available < 0) snd_pcm_recover(_interface, available, 1);
+      if(available < 0) {
+        snd_pcm_recover(_interface, available, 1);
+        continue;
+      }
       if(available < _offset) {
         if(!self.blocking) {
           _offset = 0;
