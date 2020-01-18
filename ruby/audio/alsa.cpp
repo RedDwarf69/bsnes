@@ -17,6 +17,7 @@ struct AudioALSA : AudioDriver {
   auto ready() -> bool override { return _ready; }
 
   auto hasBlocking() -> bool override { return true; }
+  auto hasDynamic() -> bool override { return true; }
 
   auto hasDevices() -> vector<string> override {
     vector<string> devices;
