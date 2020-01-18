@@ -35,12 +35,8 @@ struct AudioPulseAudio : AudioDriver {
     if((++_offset + 1) * pa_frame_size(&_specification) <= _period) return;
 
     while(true) {
-      if(_first) {
-        _first = false;
-        pa_mainloop_iterate(_mainLoop, 0, nullptr);
-      } else {
-        pa_mainloop_iterate(_mainLoop, 1, nullptr);
-      }
+      pa_mainloop_iterate(_mainLoop, 0, nullptr);
+
       uint length = pa_stream_writable_size(_stream);
       if(length >= _offset * pa_frame_size(&_specification)) break;
       if(!self.blocking) {
@@ -95,7 +91,6 @@ private:
 
     _period = realBufferAttributes->minreq;
     _offset = 0;
-    _first = true;
     return _ready = true;
   }
 
@@ -135,5 +130,4 @@ private:
   pa_context* _context = nullptr;
   pa_stream* _stream = nullptr;
   pa_sample_spec _specification;
-  bool _first = true;
 };
